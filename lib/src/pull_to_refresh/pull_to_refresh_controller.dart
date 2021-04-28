@@ -1,11 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
-import '../in_app_webview/webview.dart';
+
 import '../in_app_browser/in_app_browser.dart';
-import '../util.dart';
-import '../types.dart';
 import '../in_app_webview/android/in_app_webview_options.dart';
+import '../in_app_webview/webview.dart';
+import '../types.dart';
+import '../util.dart';
 import 'pull_to_refresh_options.dart';
 
 ///A standard controller that can initiate the refreshing of a scroll view’s contents.
@@ -16,20 +17,20 @@ import 'pull_to_refresh_options.dart';
 ///
 ///**NOTE for Android**: to be able to use the "pull-to-refresh" feature, [AndroidInAppWebViewOptions.useHybridComposition] must be `true`.
 class PullToRefreshController {
-  late PullToRefreshOptions options;
-  MethodChannel? _channel;
+  PullToRefreshOptions options;
+  MethodChannel _channel;
 
   ///Event called when a swipe gesture triggers a refresh.
-  final void Function()? onRefresh;
+  final void Function() onRefresh;
 
-  PullToRefreshController({PullToRefreshOptions? options, this.onRefresh}) {
+  PullToRefreshController({PullToRefreshOptions options, this.onRefresh}) {
     this.options = options ?? PullToRefreshOptions();
   }
 
   Future<dynamic> handleMethod(MethodCall call) async {
     switch (call.method) {
       case "onRefresh":
-        if (onRefresh != null) onRefresh!();
+        if (onRefresh != null) onRefresh();
         break;
       default:
         throw UnimplementedError("Unimplemented ${call.method} method");

@@ -42,6 +42,7 @@ import android.webkit.WebBackForwardList;
 import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
+import android.webkit.WebView;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -226,7 +227,6 @@ final public class InAppWebView extends InputAwareWebView {
     settings.setBuiltInZoomControls(options.builtInZoomControls);
     settings.setDisplayZoomControls(options.displayZoomControls);
     settings.setSupportMultipleWindows(options.supportMultipleWindows);
-
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
       settings.setSafeBrowsingEnabled(options.safeBrowsingEnabled);
 
@@ -266,6 +266,15 @@ final public class InAppWebView extends InputAwareWebView {
 
     if (options.transparentBackground)
       setBackgroundColor(Color.TRANSPARENT);
+    if (options.backgroundColor != null) {
+      int color;
+      try {
+        color = Color.parseColor(options.backgroundColor);
+      } catch (IllegalArgumentException e) {
+        color = Color.WHITE;
+      }
+      setBackgroundColor(color);
+    }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && options.mixedContentMode != null)
       settings.setMixedContentMode(options.mixedContentMode);
@@ -726,8 +735,23 @@ final public class InAppWebView extends InputAwareWebView {
       if (newOptions.transparentBackground) {
         setBackgroundColor(Color.TRANSPARENT);
       } else {
-        setBackgroundColor(Color.parseColor("#FFFFFF"));
+        int color;
+        try {
+          color = Color.parseColor(options.backgroundColor);
+        } catch (IllegalArgumentException e) {
+          color = Color.WHITE;
+        }
+        setBackgroundColor(color);
       }
+    }
+    if (newOptionsMap.get("backgroundColor") != null && options.backgroundColor != newOptions.backgroundColor) {
+      int color;
+      try {
+        color = Color.parseColor(options.backgroundColor);
+      } catch (IllegalArgumentException e) {
+        color = Color.WHITE;
+      }
+      setBackgroundColor(color);
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)

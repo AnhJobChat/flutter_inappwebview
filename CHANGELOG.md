@@ -176,7 +176,7 @@
 
 ### BREAKING CHANGES
 
-- Minimum Flutter version required is `1.22.2` and Dart SDK `>=2.12.0-0 <3.0.0`
+- Minimum Flutter version @required is `1.22.2` and Dart SDK `>=2.7.0 <3.0.0`
 - iOS Xcode version `>= 12`
 - `allowUniversalAccessFromFileURLs` and `allowFileAccessFromFileURLs` WebView options moved from Android-specific options to cross-platform options
 - Added `callAsyncJavaScript` name to the list of javaScriptHandlerForbiddenNames

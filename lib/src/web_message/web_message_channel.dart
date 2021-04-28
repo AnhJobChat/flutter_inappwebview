@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../types.dart';
+
 import '../in_app_webview/in_app_webview_controller.dart';
+import '../types.dart';
 
 ///The representation of the [HTML5 message channels](https://html.spec.whatwg.org/multipage/web-messaging.html#message-channels).
 class WebMessageChannel {
@@ -13,16 +15,16 @@ class WebMessageChannel {
   ///The second [WebMessagePort] object of the channel.
   final WebMessagePort port2;
 
-  late MethodChannel _channel;
+  MethodChannel _channel;
 
   WebMessageChannel(
-      {required this.id, required this.port1, required this.port2}) {
+      {@required this.id, @required this.port1, @required this.port2}) {
     this._channel = MethodChannel(
         'com.pichillilorenzo/flutter_inappwebview_web_message_channel_$id');
     this._channel.setMethodCallHandler(handleMethod);
   }
 
-  static WebMessageChannel? fromMap(Map<String, dynamic>? map) {
+  static WebMessageChannel fromMap(Map<String, dynamic> map) {
     if (map == null) {
       return null;
     }
@@ -41,8 +43,8 @@ class WebMessageChannel {
         int index = call.arguments["index"];
         var port = index == 0 ? this.port1 : this.port2;
         if (port._onMessage != null) {
-          String? message = call.arguments["message"];
-          port._onMessage!(message);
+          String message = call.arguments["message"];
+          port._onMessage(message);
         }
         break;
       default:
@@ -71,19 +73,17 @@ class WebMessageChannel {
 ///
 ///It is possible to transfer both ports of a channel to JavaScript, for example for communication between subframes.
 class WebMessagePort {
-  late final int _index;
+  final int index;
 
-  WebMessageCallback? _onMessage;
-  late WebMessageChannel _webMessageChannel;
+  WebMessageCallback _onMessage;
+  WebMessageChannel _webMessageChannel;
 
-  WebMessagePort({required int index}) {
-    this._index = index;
-  }
+  WebMessagePort({@required this.index});
 
   ///Sets a callback to receive message events on the main thread.
-  Future<void> setWebMessageCallback(WebMessageCallback? onMessage) async {
+  Future<void> setWebMessageCallback(WebMessageCallback onMessage) async {
     Map<String, dynamic> args = <String, dynamic>{};
-    args.putIfAbsent('index', () => this._index);
+    args.putIfAbsent('index', () => this.index);
     await _webMessageChannel._channel
         .invokeMethod('setWebMessageCallback', args);
     this._onMessage = onMessage;
@@ -92,7 +92,7 @@ class WebMessagePort {
   ///Post a WebMessage to the entangled port.
   Future<void> postMessage(WebMessage message) async {
     Map<String, dynamic> args = <String, dynamic>{};
-    args.putIfAbsent('index', () => this._index);
+    args.putIfAbsent('index', () => this.index);
     args.putIfAbsent('message', () => message.toMap());
     await _webMessageChannel._channel.invokeMethod('postMessage', args);
   }
@@ -100,13 +100,13 @@ class WebMessagePort {
   ///Close the message port and free any resources associated with it.
   Future<void> close() async {
     Map<String, dynamic> args = <String, dynamic>{};
-    args.putIfAbsent('index', () => this._index);
+    args.putIfAbsent('index', () => this.index);
     await _webMessageChannel._channel.invokeMethod('close', args);
   }
 
   Map<String, dynamic> toMap() {
     return {
-      "index": this._index,
+      "index": this.index,
       "webMessageChannelId": this._webMessageChannel.id
     };
   }
@@ -125,17 +125,17 @@ class WebMessagePort {
 ///See https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interfaces for definition of a MessageEvent in HTML5.
 class WebMessage {
   ///The data of the message.
-  String? data;
+  String data;
 
   ///The ports that are sent with the message.
-  List<WebMessagePort>? ports;
+  List<WebMessagePort> ports;
 
   WebMessage({this.data, this.ports});
 
   Map<String, dynamic> toMap() {
     return {
       "data": this.data,
-      "ports": this.ports?.map((e) => e.toMap()).toList(),
+      "ports": this.ports?.map((e) => e.toMap())?.toList(),
     };
   }
 

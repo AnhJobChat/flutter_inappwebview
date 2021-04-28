@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/services.dart';
 
 ///Class that represents an Android-specific utility class for checking which WebView Support Library features are supported on the device.
@@ -53,7 +54,7 @@ class AndroidWebViewFeature {
     AndroidWebViewFeature.WEB_VIEW_RENDERER_TERMINATE,
   ].toSet();
 
-  static AndroidWebViewFeature? fromValue(String? value) {
+  static AndroidWebViewFeature fromValue(String value) {
     if (value != null) {
       try {
         return AndroidWebViewFeature.values

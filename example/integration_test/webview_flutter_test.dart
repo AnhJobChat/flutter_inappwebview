@@ -10,14 +10,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '.env.dart';
 
 class Foo {
-  String? bar;
-  String? baz;
+  String bar;
+  String baz;
 
   Foo({this.bar, this.baz});
 
@@ -31,7 +30,7 @@ class MyInAppBrowser extends InAppBrowser {
   final Completer<void> firstPageLoaded = Completer<void>();
 
   MyInAppBrowser(
-      {int? windowId, UnmodifiableListView<UserScript>? initialUserScripts})
+      {int windowId, UnmodifiableListView<UserScript> initialUserScripts})
       : super(windowId: windowId, initialUserScripts: initialUserScripts);
 
   @override
@@ -40,7 +39,7 @@ class MyInAppBrowser extends InAppBrowser {
   }
 
   @override
-  void onLoadStop(Uri? url) {
+  void onLoadStop(Uri url) {
     super.onLoadStop(url);
 
     if (!firstPageLoaded.isCompleted) {
@@ -71,13 +70,11 @@ class MyChromeSafariBrowser extends ChromeSafariBrowser {
 }
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
   if (Platform.isAndroid) {
     AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
   }
 
- group('InAppWebView', () {
+  group('InAppWebView', () {
     testWidgets('initialUrlRequest', (WidgetTester tester) async {
       final Completer controllerCompleter = Completer<InAppWebViewController>();
       await tester.pumpWidget(
@@ -95,7 +92,7 @@ void main() {
       );
       final InAppWebViewController controller =
           await controllerCompleter.future;
-      final String? currentUrl = (await controller.getUrl())?.toString();
+      final String currentUrl = (await controller.getUrl())?.toString();
       expect(currentUrl, 'https://github.com/flutter');
     });
 
@@ -125,9 +122,9 @@ void main() {
           await controllerCompleter.future;
       await pageLoaded.future;
 
-      InAppWebViewGroupOptions? options = await controller.getOptions();
+      InAppWebViewGroupOptions options = await controller.getOptions();
       expect(options, isNotNull);
-      expect(options!.crossPlatform.javaScriptEnabled, false);
+      expect(options.crossPlatform.javaScriptEnabled, false);
 
       await controller.setOptions(
           options: InAppWebViewGroupOptions(
@@ -135,7 +132,7 @@ void main() {
 
       options = await controller.getOptions();
       expect(options, isNotNull);
-      expect(options!.crossPlatform.javaScriptEnabled, true);
+      expect(options.crossPlatform.javaScriptEnabled, true);
     });
 
     group('javascript code evaluation', () {
@@ -169,7 +166,7 @@ void main() {
         expect(result, isNotNull);
         expect(result[0], 1);
         expect(result[1], true);
-        expect(listEquals(result[2] as List<dynamic>?, ["bar", 5]), true);
+        expect(listEquals(result[2] as List<dynamic>, ["bar", 5]), true);
         expect(
             mapEquals(result[3]?.cast<String, String>(), {"foo": "baz"}), true);
       });
@@ -253,14 +250,14 @@ void main() {
             functionBody: functionBody,
             arguments: {'x': 49, 'y': 'error message'});
         expect(result, isNotNull);
-        expect(result!.error, isNull);
+        expect(result.error, isNull);
         expect(result.value, 49);
 
         result = await controller.callAsyncJavaScript(
             functionBody: functionBody,
             arguments: {'x': -49, 'y': 'error message'});
         expect(result, isNotNull);
-        expect(result!.value, isNull);
+        expect(result.value, isNull);
         expect(result.error, 'error message');
       });
 
@@ -295,14 +292,14 @@ void main() {
         var result = await controller.callAsyncJavaScript(
             functionBody: "return window.foo;");
         expect(result, isNotNull);
-        expect(result!.error, isNull);
+        expect(result.error, isNull);
         expect(result.value, isNull);
 
         result = await controller.callAsyncJavaScript(
             functionBody: "return window.foo;",
             contentWorld: ContentWorld.world(name: "custom-world"));
         expect(result, isNotNull);
-        expect(result!.error, isNull);
+        expect(result.error, isNull);
         expect(result.value, 49);
       });
     });
@@ -323,7 +320,7 @@ void main() {
               controllerCompleter.complete(controller);
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -360,10 +357,10 @@ void main() {
             initialOptions: InAppWebViewGroupOptions(
                 crossPlatform: InAppWebViewOptions(javaScriptEnabled: true)),
             onLoadStart: (controller, url) {
-              pageStarts.add(url!.toString());
+              pageStarts.add(url.toString());
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -377,27 +374,27 @@ void main() {
           urlRequest: URLRequest(
               url: Uri.parse('https://flutter-header-echo.herokuapp.com/'),
               headers: headers));
-      final String? currentUrl = (await controller.getUrl())?.toString();
+      final String currentUrl = (await controller.getUrl())?.toString();
       expect(currentUrl, 'https://flutter-header-echo.herokuapp.com/');
 
       await pageStarts.stream.firstWhere((String url) => url == currentUrl);
       await pageLoads.stream.firstWhere((String url) => url == currentUrl);
 
-      final String? content = await controller.evaluateJavascript(
+      final String content = await controller.evaluateJavascript(
           source: 'document.documentElement.innerText');
-      expect(content!.contains('flutter_test_header'), isTrue);
+      expect(content.contains('flutter_test_header'), isTrue);
 
       pageStarts.close();
       pageLoads.close();
     });
 
     group("iOS loadFileURL", () {
-      late Directory appSupportDir;
-      late File fileHtml;
-      late File fileJs;
+      Directory appSupportDir;
+      File fileHtml;
+      File fileJs;
 
       setUpAll(() async {
-        appSupportDir = (await getApplicationSupportDirectory())!;
+        appSupportDir = (await getApplicationSupportDirectory());
 
         final Directory htmlFolder = Directory('${appSupportDir.path}/html/');
         if (!await htmlFolder.exists()) {
@@ -431,8 +428,8 @@ void main() {
 
       testWidgets('initialUrl with file:// scheme and allowingReadAccessTo',
           (WidgetTester tester) async {
-        final Completer<ConsoleMessage?> consoleMessageShouldNotComplete =
-            Completer<ConsoleMessage?>();
+        final Completer<ConsoleMessage> consoleMessageShouldNotComplete =
+            Completer<ConsoleMessage>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -478,8 +475,8 @@ void main() {
       testWidgets(
           'loadUrl with file:// scheme and iosAllowingReadAccessTo argument',
           (WidgetTester tester) async {
-        final Completer<ConsoleMessage?> consoleMessageShouldNotComplete =
-            Completer<ConsoleMessage?>();
+        final Completer<ConsoleMessage> consoleMessageShouldNotComplete =
+            Completer<ConsoleMessage>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -556,11 +553,11 @@ void main() {
                   callback: (args) {
                     messagesReceived.add(args[0] as int);
                     messagesReceived.add(args[1] as bool);
-                    messagesReceived.add(args[2] as List<dynamic>?);
-                    messagesReceived.add(args[3]?.cast<String, String>()
-                        as Map<String, String>?);
-                    messagesReceived.add(args[4]?.cast<String, String>()
-                        as Map<String, String>?);
+                    messagesReceived.add(args[2] as List<dynamic>);
+                    messagesReceived.add(
+                        args[3]?.cast<String, String>() as Map<String, String>);
+                    messagesReceived.add(
+                        args[4]?.cast<String, String>() as Map<String, String>);
                     handlerFooWithArgs.complete();
                   });
             },
@@ -584,7 +581,7 @@ void main() {
       expect(messagesReceived[0], 1);
       expect(messagesReceived[1], true);
       expect(
-          listEquals(messagesReceived[2] as List<dynamic>?, ["bar", 5]), true);
+          listEquals(messagesReceived[2] as List<dynamic>, ["bar", 5]), true);
       expect(mapEquals(messagesReceived[3], {"foo": "baz"}), true);
       expect(
           mapEquals(
@@ -1092,7 +1089,7 @@ void main() {
       await pageStarted.future;
       await pageLoaded.future;
 
-      final String? title = await controller.getTitle();
+      final String title = await controller.getTitle();
       expect(title, 'Some title');
     });
 
@@ -1156,8 +1153,8 @@ void main() {
 
         await controller.scrollTo(x: X_SCROLL, y: Y_SCROLL);
         await tester.pumpAndSettle(Duration(seconds: 2));
-        int? scrollPosX = await controller.getScrollX();
-        int? scrollPosY = await controller.getScrollY();
+        int scrollPosX = await controller.getScrollX();
+        int scrollPosY = await controller.getScrollY();
         expect(scrollPosX, X_SCROLL);
         expect(scrollPosY, Y_SCROLL);
 
@@ -1234,8 +1231,8 @@ void main() {
 
         await controller.scrollTo(x: X_SCROLL, y: Y_SCROLL);
         await tester.pumpAndSettle(Duration(seconds: 2));
-        int? scrollPosX = await controller.getScrollX();
-        int? scrollPosY = await controller.getScrollY();
+        int scrollPosX = await controller.getScrollX();
+        int scrollPosY = await controller.getScrollY();
         expect(scrollPosX, X_SCROLL);
         expect(scrollPosY, Y_SCROLL);
 
@@ -1274,13 +1271,13 @@ void main() {
                     javaScriptEnabled: true, useShouldOverrideUrlLoading: true),
               ),
               shouldOverrideUrlLoading: (controller, navigationAction) async {
-                return (navigationAction.request.url!.host
+                return (navigationAction.request.url.host
                         .contains('youtube.com'))
                     ? NavigationActionPolicy.CANCEL
                     : NavigationActionPolicy.ALLOW;
               },
               onLoadStop: (controller, url) {
-                pageLoads.add(url!.toString());
+                pageLoads.add(url.toString());
               },
             ),
           ),
@@ -1293,7 +1290,7 @@ void main() {
             source: 'location.href = "https://www.google.com/"');
 
         await pageLoads.stream.first; // Wait for the next page load.
-        final String? currentUrl = (await controller.getUrl())?.toString();
+        final String currentUrl = (await controller.getUrl())?.toString();
         expect(currentUrl, 'https://www.google.com/');
 
         pageLoads.close();
@@ -1320,8 +1317,7 @@ void main() {
                     javaScriptEnabled: true, useShouldOverrideUrlLoading: true),
               ),
               shouldOverrideUrlLoading: (controller, navigationAction) async {
-                var isFirstLoad =
-                    navigationAction.request.url!.scheme == "data";
+                var isFirstLoad = navigationAction.request.url.scheme == "data";
                 return (isFirstLoad ||
                         navigationAction.iosWKNavigationType ==
                             IOSWKNavigationType.LINK_ACTIVATED)
@@ -1329,7 +1325,7 @@ void main() {
                     : NavigationActionPolicy.CANCEL;
               },
               onLoadStop: (controller, url) {
-                pageLoads.add(url!.toString());
+                pageLoads.add(url.toString());
               },
             ),
           ),
@@ -1345,10 +1341,10 @@ void main() {
         // blocked. Still wait for a potential page change for some time in order
         // to give the test a chance to fail.
         await pageLoads.stream
-            .map((event) => event as String?)
+            .map((event) => event as String)
             .first
             .timeout(const Duration(milliseconds: 500), onTimeout: () => null);
-        String? currentUrl = (await controller.getUrl())?.toString();
+        String currentUrl = (await controller.getUrl())?.toString();
         expect(currentUrl, isNot('https://www.google.com/'));
 
         await controller.evaluateJavascript(
@@ -1380,13 +1376,13 @@ void main() {
                     javaScriptEnabled: true, useShouldOverrideUrlLoading: true),
               ),
               shouldOverrideUrlLoading: (controller, navigationAction) async {
-                return (navigationAction.request.url!.host
+                return (navigationAction.request.url.host
                         .contains('youtube.com'))
                     ? NavigationActionPolicy.CANCEL
                     : NavigationActionPolicy.ALLOW;
               },
               onLoadStop: (controller, url) {
-                pageLoads.add(url!.toString());
+                pageLoads.add(url.toString());
               },
             ),
           ),
@@ -1402,10 +1398,10 @@ void main() {
         // blocked. Still wait for a potential page change for some time in order
         // to give the test a chance to fail.
         await pageLoads.stream
-            .map((event) => event as String?)
+            .map((event) => event as String)
             .first
             .timeout(const Duration(milliseconds: 500), onTimeout: () => null);
-        final String? currentUrl = (await controller.getUrl())?.toString();
+        final String currentUrl = (await controller.getUrl())?.toString();
         expect(currentUrl, isNot(contains('youtube.com')));
 
         pageLoads.close();
@@ -1438,7 +1434,7 @@ void main() {
                 return action;
               },
               onLoadStop: (controller, url) {
-                pageLoads.add(url!.toString());
+                pageLoads.add(url.toString());
               },
             ),
           ),
@@ -1451,7 +1447,7 @@ void main() {
             source: 'location.href = "https://www.google.com"');
 
         await pageLoads.stream.first; // Wait for second page to load.
-        final String? currentUrl = (await controller.getUrl())?.toString();
+        final String currentUrl = (await controller.getUrl())?.toString();
         expect(currentUrl, 'https://www.google.com/');
 
         pageLoads.close();
@@ -1541,7 +1537,7 @@ void main() {
       );
       final InAppWebViewController controller =
           await controllerCompleter.future;
-      final String? currentUrl = (await controller.getUrl())?.toString();
+      final String currentUrl = (await controller.getUrl())?.toString();
       expect(currentUrl, 'https://github.com/flutter');
     }, skip: !Platform.isIOS);
 
@@ -1564,7 +1560,7 @@ void main() {
                   javaScriptCanOpenWindowsAutomatically: true),
             ),
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -1576,7 +1572,7 @@ void main() {
       await controller.evaluateJavascript(
           source: 'window.open("about:blank", "_blank");');
       await pageLoads.stream.first;
-      final String? currentUrl = (await controller.getUrl())?.toString();
+      final String currentUrl = (await controller.getUrl())?.toString();
       expect(currentUrl, 'about:blank');
 
       pageLoads.close();
@@ -1605,7 +1601,7 @@ void main() {
                     javaScriptCanOpenWindowsAutomatically: true),
               ),
               onLoadStop: (controller, url) {
-                pageLoads.add(url!.toString());
+                pageLoads.add(url.toString());
               },
             ),
           ),
@@ -1708,13 +1704,14 @@ void main() {
 
     group('intercept ajax request', () {
       testWidgets('send string data', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer shouldInterceptAjaxPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         final Completer<Map<String, dynamic>> onAjaxReadyStateChangeCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<Map<String, dynamic>> onAjaxProgressCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -1744,9 +1741,9 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptAjaxRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptAjaxRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
               },
@@ -1767,7 +1764,7 @@ void main() {
                 return AjaxRequestAction.PROCEED;
               },
               onAjaxProgress: (controller, ajaxRequest) async {
-                if (ajaxRequest.event!.type == AjaxRequestEventType.LOAD) {
+                if (ajaxRequest.event.type == AjaxRequestEventType.LOAD) {
                   Map<String, dynamic> res = ajaxRequest.response;
                   onAjaxProgressCompleter.complete(res);
                 }
@@ -1779,9 +1776,9 @@ void main() {
 
         await shouldInterceptAjaxPostRequestCompleter.future;
         final Map<String, dynamic> onAjaxReadyStateChangeValue =
-        await onAjaxReadyStateChangeCompleter.future;
+            await onAjaxReadyStateChangeCompleter.future;
         final Map<String, dynamic> onAjaxProgressValue =
-        await onAjaxProgressCompleter.future;
+            await onAjaxProgressCompleter.future;
 
         expect(
             mapEquals(onAjaxReadyStateChangeValue,
@@ -1794,13 +1791,14 @@ void main() {
       });
 
       testWidgets('send json data', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer shouldInterceptAjaxPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         final Completer<Map<String, dynamic>> onAjaxReadyStateChangeCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<Map<String, dynamic>> onAjaxProgressCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -1834,15 +1832,16 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptAjaxRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptAjaxRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
               },
               shouldInterceptAjaxRequest: (controller, ajaxRequest) async {
                 String data = ajaxRequest.data;
-                assert(data.contains('"firstname":"Foo"') && data.contains('"lastname":"Bar"'));
+                assert(data.contains('"firstname":"Foo"') &&
+                    data.contains('"lastname":"Bar"'));
 
                 ajaxRequest.responseType = 'json';
                 ajaxRequest.data = '{"firstname": "Foo2", "lastname": "Bar2"}';
@@ -1858,7 +1857,7 @@ void main() {
                 return AjaxRequestAction.PROCEED;
               },
               onAjaxProgress: (controller, ajaxRequest) async {
-                if (ajaxRequest.event!.type == AjaxRequestEventType.LOAD) {
+                if (ajaxRequest.event.type == AjaxRequestEventType.LOAD) {
                   Map<String, dynamic> res = ajaxRequest.response;
                   onAjaxProgressCompleter.complete(res);
                 }
@@ -1870,9 +1869,9 @@ void main() {
 
         await shouldInterceptAjaxPostRequestCompleter.future;
         final Map<String, dynamic> onAjaxReadyStateChangeValue =
-        await onAjaxReadyStateChangeCompleter.future;
+            await onAjaxReadyStateChangeCompleter.future;
         final Map<String, dynamic> onAjaxProgressValue =
-        await onAjaxProgressCompleter.future;
+            await onAjaxProgressCompleter.future;
 
         expect(
             mapEquals(onAjaxReadyStateChangeValue,
@@ -1885,13 +1884,14 @@ void main() {
       });
 
       testWidgets('send URLSearchParams data', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer shouldInterceptAjaxPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         final Completer<Map<String, dynamic>> onAjaxReadyStateChangeCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<Map<String, dynamic>> onAjaxProgressCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -1923,9 +1923,9 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptAjaxRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptAjaxRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
               },
@@ -1946,7 +1946,7 @@ void main() {
                 return AjaxRequestAction.PROCEED;
               },
               onAjaxProgress: (controller, ajaxRequest) async {
-                if (ajaxRequest.event!.type == AjaxRequestEventType.LOAD) {
+                if (ajaxRequest.event.type == AjaxRequestEventType.LOAD) {
                   Map<String, dynamic> res = ajaxRequest.response;
                   onAjaxProgressCompleter.complete(res);
                 }
@@ -1958,9 +1958,9 @@ void main() {
 
         await shouldInterceptAjaxPostRequestCompleter.future;
         final Map<String, dynamic> onAjaxReadyStateChangeValue =
-        await onAjaxReadyStateChangeCompleter.future;
+            await onAjaxReadyStateChangeCompleter.future;
         final Map<String, dynamic> onAjaxProgressValue =
-        await onAjaxProgressCompleter.future;
+            await onAjaxProgressCompleter.future;
 
         expect(
             mapEquals(onAjaxReadyStateChangeValue,
@@ -1973,13 +1973,14 @@ void main() {
       });
 
       testWidgets('send FormData', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer shouldInterceptAjaxPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         final Completer<Map<String, dynamic>> onAjaxReadyStateChangeCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<Map<String, dynamic>> onAjaxProgressCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -2011,9 +2012,9 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptAjaxRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptAjaxRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
               },
@@ -2024,7 +2025,9 @@ void main() {
                 var bodyString = String.fromCharCodes(body);
                 assert(bodyString.indexOf("WebKitFormBoundary") >= 0);
 
-                ajaxRequest.data = utf8.encode(bodyString.replaceFirst("Foo", "Foo2").replaceFirst("Bar", "Bar2"));
+                ajaxRequest.data = utf8.encode(bodyString
+                    .replaceFirst("Foo", "Foo2")
+                    .replaceFirst("Bar", "Bar2"));
                 ajaxRequest.responseType = 'json';
                 shouldInterceptAjaxPostRequestCompleter.complete(controller);
                 return ajaxRequest;
@@ -2038,7 +2041,7 @@ void main() {
                 return AjaxRequestAction.PROCEED;
               },
               onAjaxProgress: (controller, ajaxRequest) async {
-                if (ajaxRequest.event!.type == AjaxRequestEventType.LOAD) {
+                if (ajaxRequest.event.type == AjaxRequestEventType.LOAD) {
                   Map<String, dynamic> res = ajaxRequest.response;
                   onAjaxProgressCompleter.complete(res);
                 }
@@ -2050,9 +2053,9 @@ void main() {
 
         await shouldInterceptAjaxPostRequestCompleter.future;
         final Map<String, dynamic> onAjaxReadyStateChangeValue =
-        await onAjaxReadyStateChangeCompleter.future;
+            await onAjaxReadyStateChangeCompleter.future;
         final Map<String, dynamic> onAjaxProgressValue =
-        await onAjaxProgressCompleter.future;
+            await onAjaxProgressCompleter.future;
 
         expect(
             mapEquals(onAjaxReadyStateChangeValue,
@@ -2067,11 +2070,12 @@ void main() {
 
     group('intercept fetch request', () {
       testWidgets('send string data', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer<Map<String, dynamic>> fetchPostCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<void> shouldInterceptFetchPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -2112,9 +2116,9 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptFetchRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptFetchRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
 
@@ -2146,11 +2150,12 @@ void main() {
       });
 
       testWidgets('send json data', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer<Map<String, dynamic>> fetchPostCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<void> shouldInterceptFetchPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -2195,9 +2200,9 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptFetchRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptFetchRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
 
@@ -2210,7 +2215,8 @@ void main() {
               },
               shouldInterceptFetchRequest: (controller, fetchRequest) async {
                 String body = fetchRequest.body;
-                assert(body.contains('"firstname":"Foo"') && body.contains('"lastname":"Bar"'));
+                assert(body.contains('"firstname":"Foo"') &&
+                    body.contains('"lastname":"Bar"'));
 
                 fetchRequest.body = '{"firstname": "Foo2", "lastname": "Bar2"}';
                 shouldInterceptFetchPostRequestCompleter.complete();
@@ -2230,11 +2236,12 @@ void main() {
       });
 
       testWidgets('send URLSearchParams data', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer<Map<String, dynamic>> fetchPostCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<void> shouldInterceptFetchPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -2277,9 +2284,9 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptFetchRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptFetchRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
 
@@ -2311,11 +2318,12 @@ void main() {
       });
 
       testWidgets('send FormData', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer<Map<String, dynamic>> fetchPostCompleter =
-        Completer<Map<String, dynamic>>();
+            Completer<Map<String, dynamic>>();
         final Completer<void> shouldInterceptFetchPostRequestCompleter =
-        Completer<void>();
+            Completer<void>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
@@ -2356,9 +2364,9 @@ void main() {
                     """),
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
-                    clearCache: true,
-                    useShouldInterceptFetchRequest: true,
-                  )),
+                clearCache: true,
+                useShouldInterceptFetchRequest: true,
+              )),
               onWebViewCreated: (controller) {
                 controllerCompleter.complete(controller);
 
@@ -2376,7 +2384,9 @@ void main() {
                 var bodyString = String.fromCharCodes(body);
                 assert(bodyString.indexOf("WebKitFormBoundary") >= 0);
 
-                fetchRequest.body = utf8.encode(bodyString.replaceFirst("Foo", "Foo2").replaceFirst("Bar", "Bar2"));
+                fetchRequest.body = utf8.encode(bodyString
+                    .replaceFirst("Foo", "Foo2")
+                    .replaceFirst("Bar", "Bar2"));
                 shouldInterceptFetchPostRequestCompleter.complete();
                 return fetchRequest;
               },
@@ -2403,24 +2413,24 @@ void main() {
           child: InAppWebView(
             key: GlobalKey(),
             initialUrlRequest:
-            URLRequest(url: Uri.parse('https://flutter.dev/')),
+                URLRequest(url: Uri.parse('https://flutter.dev/')),
             onWebViewCreated: (controller) {
               controllerCompleter.complete(controller);
             },
             initialOptions: InAppWebViewGroupOptions(
                 crossPlatform:
-                InAppWebViewOptions(clearCache: true, contentBlockers: [
-                  ContentBlocker(
-                      trigger:
+                    InAppWebViewOptions(clearCache: true, contentBlockers: [
+              ContentBlocker(
+                  trigger:
                       ContentBlockerTrigger(urlFilter: ".*", resourceType: [
-                        ContentBlockerTriggerResourceType.IMAGE,
-                        ContentBlockerTriggerResourceType.STYLE_SHEET
-                      ], ifTopUrl: [
-                        "https://flutter.dev/"
-                      ]),
-                      action: ContentBlockerAction(
-                          type: ContentBlockerActionType.BLOCK))
-                ])),
+                    ContentBlockerTriggerResourceType.IMAGE,
+                    ContentBlockerTriggerResourceType.STYLE_SHEET
+                  ], ifTopUrl: [
+                    "https://flutter.dev/"
+                  ]),
+                  action: ContentBlockerAction(
+                      type: ContentBlockerActionType.BLOCK))
+            ])),
             onLoadStop: (controller, url) {
               pageLoaded.complete();
             },
@@ -2438,7 +2448,7 @@ void main() {
 
       httpAuthCredentialDatabase.setHttpAuthCredential(
           protectionSpace: URLProtectionSpace(
-              host: environment["NODE_SERVER_IP"]!,
+              host: environment["NODE_SERVER_IP"],
               protocol: "http",
               realm: "Node",
               port: 8081),
@@ -2481,7 +2491,7 @@ void main() {
 
       var credentials = await httpAuthCredentialDatabase.getHttpAuthCredentials(
           protectionSpace: URLProtectionSpace(
-              host: environment["NODE_SERVER_IP"]!,
+              host: environment["NODE_SERVER_IP"],
               protocol: "http",
               realm: "Node",
               port: 8081));
@@ -2490,7 +2500,7 @@ void main() {
       await httpAuthCredentialDatabase.clearAllAuthCredentials();
       credentials = await httpAuthCredentialDatabase.getHttpAuthCredentials(
           protectionSpace: URLProtectionSpace(
-              host: environment["NODE_SERVER_IP"]!,
+              host: environment["NODE_SERVER_IP"],
               protocol: "http",
               realm: "Node",
               port: 8081));
@@ -2586,7 +2596,7 @@ void main() {
                 controllerCompleter.complete(controller);
               },
               onLoadStop: (controller, url) {
-                if (url!.toString() == "https://flutter.dev/") {
+                if (url.toString() == "https://flutter.dev/") {
                   pageLoaded.complete();
                 }
               },
@@ -2652,7 +2662,7 @@ void main() {
                 windowControllerCompleter.complete(controller);
               },
               onLoadStop: (controller, url) async {
-                if (url!.scheme != "about" && !windowPageLoaded.isCompleted) {
+                if (url.scheme != "about" && !windowPageLoaded.isCompleted) {
                   windowPageLoaded.complete(url.toString());
                   await controller.evaluateJavascript(
                       source: "window.close();");
@@ -2912,7 +2922,7 @@ void main() {
                 pageLoaded.complete();
               },
               onLoadResource: (controller, response) async {
-                resourceLoaded.add(response.url!.toString());
+                resourceLoaded.add(response.url.toString());
                 if (resourceLoaded.length == resourceList.length) {
                   loadedResourceCompleter.complete();
                 }
@@ -2948,7 +2958,7 @@ void main() {
               pageLoaded.complete();
             },
             onUpdateVisitedHistory: (controller, url, androidIsReload) async {
-              if (url!.toString().endsWith("second-push")) {
+              if (url.toString().endsWith("second-push")) {
                 secondPushCompleter.complete();
               } else if (url.toString().endsWith("first-push")) {
                 firstPushCompleter.complete();
@@ -3030,7 +3040,7 @@ setTimeout(function() {
               controller.android.startSafeBrowsing();
             },
             onLoadStop: (controller, url) {
-              pageLoaded.complete(url!.toString());
+              pageLoaded.complete(url.toString());
             },
             androidOnSafeBrowsingHit: (controller, url, threatType) async {
               return SafeBrowsingResponse(
@@ -3208,7 +3218,7 @@ setTimeout(function() {
         ),
       );
 
-      final String? url = await onPageCommitVisibleCompleter.future;
+      final String url = await onPageCommitVisibleCompleter.future;
       expect(url, 'https://github.com/flutter');
     });
 
@@ -3260,7 +3270,7 @@ setTimeout(function() {
           child: InAppWebView(
             key: GlobalKey(),
             initialUrlRequest:
-            URLRequest(url: Uri.parse('https://github.com/flutter')),
+                URLRequest(url: Uri.parse('https://github.com/flutter')),
             onWebViewCreated: (controller) {
               controllerCompleter.complete(controller);
             },
@@ -3277,7 +3287,7 @@ setTimeout(function() {
       );
 
       final InAppWebViewController controller =
-      await controllerCompleter.future;
+          await controllerCompleter.future;
       await pageLoaded.future;
       listenForScaleChange = true;
 
@@ -3519,7 +3529,7 @@ setTimeout(function() {
               },
               iosOnNavigationResponse: (controller, navigationResponse) async {
                 onNavigationResponseCompleter
-                    .complete(navigationResponse.response!.url.toString());
+                    .complete(navigationResponse.response.url.toString());
                 return IOSNavigationResponseAction.ALLOW;
               },
             ),
@@ -3555,7 +3565,7 @@ setTimeout(function() {
               },
               iosOnNavigationResponse: (controller, navigationResponse) async {
                 onNavigationResponseCompleter
-                    .complete(navigationResponse.response!.url.toString());
+                    .complete(navigationResponse.response.url.toString());
                 return IOSNavigationResponseAction.CANCEL;
               },
             ),
@@ -3660,11 +3670,11 @@ setTimeout(function() {
             await controllerCompleter.future;
         await postPageLoaded.future;
 
-        final String? currentUrl = (await controller.getUrl())?.toString();
+        final String currentUrl = (await controller.getUrl())?.toString();
         expect(currentUrl,
             'http://${environment["NODE_SERVER_IP"]}:8082/test-post');
 
-        final String? pContent = await controller.evaluateJavascript(
+        final String pContent = await controller.evaluateJavascript(
             source: "document.querySelector('p').innerHTML;");
         expect(pContent, "HELLO FooBar!");
       });
@@ -3708,11 +3718,11 @@ setTimeout(function() {
 
         await postPageLoaded.future;
 
-        final String? currentUrl = (await controller.getUrl())?.toString();
+        final String currentUrl = (await controller.getUrl())?.toString();
         expect(currentUrl,
             'http://${environment["NODE_SERVER_IP"]}:8082/test-post');
 
-        final String? pContent = await controller.evaluateJavascript(
+        final String pContent = await controller.evaluateJavascript(
             source: "document.querySelector('p').innerHTML;");
         expect(pContent, "HELLO FooBar!");
       });
@@ -3751,11 +3761,11 @@ setTimeout(function() {
 
         await postPageLoaded.future;
 
-        final String? currentUrl = (await controller.getUrl())?.toString();
+        final String currentUrl = (await controller.getUrl())?.toString();
         expect(currentUrl,
             'http://${environment["NODE_SERVER_IP"]}:8082/test-post');
 
-        final String? pContent = await controller.evaluateJavascript(
+        final String pContent = await controller.evaluateJavascript(
             source: "document.querySelector('p').innerHTML;");
         expect(pContent, "HELLO FooBar!");
       });
@@ -3776,7 +3786,7 @@ setTimeout(function() {
               controllerCompleter.complete(controller);
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -3808,7 +3818,7 @@ setTimeout(function() {
           baseUrl: Uri.parse("https://flutter.dev"));
       await pageLoads.stream.first;
 
-      final String? currentUrl = (await controller.getUrl())?.toString();
+      final String currentUrl = (await controller.getUrl())?.toString();
       expect(currentUrl, 'https://flutter.dev/');
 
       pageLoads.close();
@@ -3829,7 +3839,7 @@ setTimeout(function() {
               controllerCompleter.complete(controller);
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -3843,9 +3853,9 @@ setTimeout(function() {
           assetFilePath: "test_assets/in_app_webview_initial_file_test.html");
       await pageLoads.stream.first;
 
-      final Uri? url = await controller.getUrl();
+      final Uri url = await controller.getUrl();
       expect(url, isNotNull);
-      expect(url!.scheme, 'file');
+      expect(url.scheme, 'file');
       expect(url.path,
           endsWith("test_assets/in_app_webview_initial_file_test.html"));
 
@@ -3868,14 +3878,14 @@ setTimeout(function() {
               controllerCompleter.complete(controller);
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
       );
       final InAppWebViewController controller =
           await controllerCompleter.future;
-      String? url = await pageLoads.stream.first;
+      String url = await pageLoads.stream.first;
       expect(url, 'https://github.com/flutter');
 
       await controller.reload();
@@ -3902,7 +3912,7 @@ setTimeout(function() {
               controllerCompleter.complete(controller);
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -3914,9 +3924,9 @@ setTimeout(function() {
       var url = await pageLoads.stream.first;
       var webHistory = await controller.getCopyBackForwardList();
       expect(url, 'https://flutter.dev/');
-      expect(webHistory!.currentIndex, 0);
-      expect(webHistory.list!.length, 1);
-      expect(webHistory.list![0].url.toString(), 'https://flutter.dev/');
+      expect(webHistory.currentIndex, 0);
+      expect(webHistory.list.length, 1);
+      expect(webHistory.list[0].url.toString(), 'https://flutter.dev/');
 
       await controller.loadUrl(
           urlRequest: URLRequest(url: Uri.parse('https://github.com/flutter')));
@@ -3927,10 +3937,10 @@ setTimeout(function() {
       expect(await controller.canGoForward(), false);
       expect(await controller.canGoBackOrForward(steps: -1), true);
       expect(await controller.canGoBackOrForward(steps: 1), false);
-      expect(webHistory!.currentIndex, 1);
-      expect(webHistory.list!.length, 2);
-      expect(webHistory.list![0].url.toString(), 'https://flutter.dev/');
-      expect(webHistory.list![1].url.toString(), 'https://github.com/flutter');
+      expect(webHistory.currentIndex, 1);
+      expect(webHistory.list.length, 2);
+      expect(webHistory.list[0].url.toString(), 'https://flutter.dev/');
+      expect(webHistory.list[1].url.toString(), 'https://github.com/flutter');
 
       await Future.delayed(Duration(seconds: 1));
       await controller.goBack();
@@ -3941,10 +3951,10 @@ setTimeout(function() {
       expect(await controller.canGoForward(), true);
       expect(await controller.canGoBackOrForward(steps: -1), false);
       expect(await controller.canGoBackOrForward(steps: 1), true);
-      expect(webHistory!.currentIndex, 0);
-      expect(webHistory.list!.length, 2);
-      expect(webHistory.list![0].url.toString(), 'https://flutter.dev/');
-      expect(webHistory.list![1].url.toString(), 'https://github.com/flutter');
+      expect(webHistory.currentIndex, 0);
+      expect(webHistory.list.length, 2);
+      expect(webHistory.list[0].url.toString(), 'https://flutter.dev/');
+      expect(webHistory.list[1].url.toString(), 'https://github.com/flutter');
 
       await Future.delayed(Duration(seconds: 1));
       await controller.goForward();
@@ -3955,13 +3965,13 @@ setTimeout(function() {
       expect(await controller.canGoForward(), false);
       expect(await controller.canGoBackOrForward(steps: -1), true);
       expect(await controller.canGoBackOrForward(steps: 1), false);
-      expect(webHistory!.currentIndex, 1);
-      expect(webHistory.list!.length, 2);
-      expect(webHistory.list![0].url.toString(), 'https://flutter.dev/');
-      expect(webHistory.list![1].url.toString(), 'https://github.com/flutter');
+      expect(webHistory.currentIndex, 1);
+      expect(webHistory.list.length, 2);
+      expect(webHistory.list[0].url.toString(), 'https://flutter.dev/');
+      expect(webHistory.list[1].url.toString(), 'https://github.com/flutter');
 
       await Future.delayed(Duration(seconds: 1));
-      await controller.goTo(historyItem: webHistory.list![0]);
+      await controller.goTo(historyItem: webHistory.list[0]);
       url = await pageLoads.stream.first;
       webHistory = await controller.getCopyBackForwardList();
       expect(url, 'https://flutter.dev/');
@@ -3969,10 +3979,10 @@ setTimeout(function() {
       expect(await controller.canGoForward(), true);
       expect(await controller.canGoBackOrForward(steps: -1), false);
       expect(await controller.canGoBackOrForward(steps: 1), true);
-      expect(webHistory!.currentIndex, 0);
-      expect(webHistory.list!.length, 2);
-      expect(webHistory.list![0].url.toString(), 'https://flutter.dev/');
-      expect(webHistory.list![1].url.toString(), 'https://github.com/flutter');
+      expect(webHistory.currentIndex, 0);
+      expect(webHistory.list.length, 2);
+      expect(webHistory.list[0].url.toString(), 'https://flutter.dev/');
+      expect(webHistory.list[1].url.toString(), 'https://github.com/flutter');
 
       pageLoads.close();
     });
@@ -4002,7 +4012,7 @@ setTimeout(function() {
           await controllerCompleter.future;
       await pageLoaded.future;
 
-      final int? progress = await controller.getProgress();
+      final int progress = await controller.getProgress();
       expect(progress, 100);
     });
 
@@ -4031,7 +4041,7 @@ setTimeout(function() {
           await controllerCompleter.future;
       await pageLoaded.future;
 
-      final String? html = await controller.getHtml();
+      final String html = await controller.getHtml();
       expect(html, isNotNull);
     });
 
@@ -4060,7 +4070,7 @@ setTimeout(function() {
           await controllerCompleter.future;
       await pageLoaded.future;
 
-      final List<Favicon>? favicons = await controller.getFavicons();
+      final List<Favicon> favicons = await controller.getFavicons();
       expect(favicons, isNotNull);
       expect(favicons, isNotEmpty);
     });
@@ -4166,10 +4176,14 @@ setTimeout(function() {
       await pageLoaded.future;
 
       await controller.injectJavascriptFileFromUrl(
-          urlFile: Uri.parse('https://www.notawebsite..com/jquery-3.3.1.min.js'),
-          scriptHtmlTagAttributes: ScriptHtmlTagAttributes(id: 'jquery-error', onError: () {
-            jQueryLoadError.complete();
-          },));
+          urlFile:
+              Uri.parse('https://www.notawebsite..com/jquery-3.3.1.min.js'),
+          scriptHtmlTagAttributes: ScriptHtmlTagAttributes(
+            id: 'jquery-error',
+            onError: () {
+              jQueryLoadError.complete();
+            },
+          ));
       await jQueryLoadError.future;
       expect(
           await controller.evaluateJavascript(
@@ -4181,9 +4195,12 @@ setTimeout(function() {
 
       await controller.injectJavascriptFileFromUrl(
           urlFile: Uri.parse('https://code.jquery.com/jquery-3.3.1.min.js'),
-          scriptHtmlTagAttributes: ScriptHtmlTagAttributes(id: 'jquery', onLoad: () {
-            jQueryLoaded.complete();
-          },));
+          scriptHtmlTagAttributes: ScriptHtmlTagAttributes(
+            id: 'jquery',
+            onLoad: () {
+              jQueryLoaded.complete();
+            },
+          ));
       await jQueryLoaded.future;
       expect(
           await controller.evaluateJavascript(
@@ -4255,7 +4272,7 @@ setTimeout(function() {
       }
       """);
 
-      String? backgroundColor = await controller.evaluateJavascript(source: """
+      String backgroundColor = await controller.evaluateJavascript(source: """
       var element = document.body;
       var style = getComputedStyle(element);
       style.backgroundColor;
@@ -4325,7 +4342,7 @@ setTimeout(function() {
       await controller.injectCSSFileFromAsset(
           assetFilePath: 'test_assets/css/blue-body.css');
 
-      String? backgroundColor = await controller.evaluateJavascript(source: """
+      String backgroundColor = await controller.evaluateJavascript(source: """
       var element = document.body;
       var style = getComputedStyle(element);
       style.backgroundColor;
@@ -4750,7 +4767,7 @@ setTimeout(function() {
 
       var sslCertificate = await controller.getCertificate();
       expect(sslCertificate, isNotNull);
-      expect(sslCertificate!.x509Certificate, isNotNull);
+      expect(sslCertificate.x509Certificate, isNotNull);
       expect(sslCertificate.issuedBy, isNotNull);
       expect(sslCertificate.issuedTo, isNotNull);
       expect(sslCertificate.validNotAfterDate, isNotNull);
@@ -4773,7 +4790,7 @@ setTimeout(function() {
               controllerCompleter.complete(controller);
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -4853,7 +4870,7 @@ setTimeout(function() {
         fileName = fileName + WebArchiveFormat.WEBARCHIVE.toValue();
       }
 
-      var fullPath = supportDir!.path + Platform.pathSeparator + fileName;
+      var fullPath = supportDir.path + Platform.pathSeparator + fileName;
       var path = await controller.saveWebArchive(filePath: fullPath);
       expect(path, isNotNull);
       expect(path, endsWith(fileName));
@@ -4879,7 +4896,7 @@ setTimeout(function() {
               controllerCompleter.complete(controller);
             },
             onLoadStop: (controller, url) {
-              pageLoads.add(url!.toString());
+              pageLoads.add(url.toString());
             },
           ),
         ),
@@ -4902,21 +4919,19 @@ setTimeout(function() {
       expect(await InAppWebViewController.getDefaultUserAgent(), isNotNull);
     });
 
-    testWidgets('launches with pull-to-refresh feature', (WidgetTester tester) async {
+    testWidgets('launches with pull-to-refresh feature',
+        (WidgetTester tester) async {
       final Completer controllerCompleter = Completer<InAppWebViewController>();
       final pullToRefreshController = PullToRefreshController(
         options: PullToRefreshOptions(
-          color: Colors.blue,
-          size: AndroidPullToRefreshSize.DEFAULT,
-          backgroundColor: Colors.grey,
-          enabled: true,
-          slingshotDistance: 150,
-          distanceToTriggerSync: 150,
-          attributedTitle: IOSNSAttributedString(string: "test")
-        ),
-        onRefresh: () {
-
-        },
+            color: Colors.blue,
+            size: AndroidPullToRefreshSize.DEFAULT,
+            backgroundColor: Colors.grey,
+            enabled: true,
+            slingshotDistance: 150,
+            distanceToTriggerSync: 150,
+            attributedTitle: IOSNSAttributedString(string: "test")),
+        onRefresh: () {},
       );
 
       await tester.pumpWidget(
@@ -4924,12 +4939,11 @@ setTimeout(function() {
           textDirection: TextDirection.ltr,
           child: InAppWebView(
             key: GlobalKey(),
-            initialUrlRequest: URLRequest(url: Uri.parse('https://github.com/flutter')),
+            initialUrlRequest:
+                URLRequest(url: Uri.parse('https://github.com/flutter')),
             initialOptions: InAppWebViewGroupOptions(
-              android: AndroidInAppWebViewOptions(
-                useHybridComposition: true
-              )
-            ),
+                android:
+                    AndroidInAppWebViewOptions(useHybridComposition: true)),
             pullToRefreshController: pullToRefreshController,
             onWebViewCreated: (controller) {
               controllerCompleter.complete(controller);
@@ -4938,22 +4952,22 @@ setTimeout(function() {
         ),
       );
       final InAppWebViewController controller =
-      await controllerCompleter.future;
-      final String? currentUrl = (await controller.getUrl())?.toString();
+          await controllerCompleter.future;
+      final String currentUrl = (await controller.getUrl())?.toString();
       expect(currentUrl, 'https://github.com/flutter');
     });
 
     group('WebMessage', () {
       testWidgets('WebMessageChannel', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer webMessageCompleter = Completer<String>();
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
             child: InAppWebView(
               key: GlobalKey(),
-              initialData: InAppWebViewInitialData(
-                  data: """
+              initialData: InAppWebViewInitialData(data: """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4988,15 +5002,20 @@ setTimeout(function() {
                 webMessageCompleter.complete(consoleMessage.message);
               },
               onLoadStop: (controller, url) async {
-                var webMessageChannel = await controller.createWebMessageChannel();
-                var port1 = webMessageChannel!.port1;
+                var webMessageChannel =
+                    await controller.createWebMessageChannel();
+                var port1 = webMessageChannel.port1;
                 var port2 = webMessageChannel.port2;
 
                 await port1.setWebMessageCallback((message) async {
-                  await port1.postMessage(WebMessage(data: message! + " and back"));
+                  await port1
+                      .postMessage(WebMessage(data: message + " and back"));
                 });
-                await controller.postWebMessage(message: WebMessage(data: "capturePort", ports: [port2]), targetOrigin: Uri.parse("*"));
-                await controller.evaluateJavascript(source: "document.getElementById('button').click();");
+                await controller.postWebMessage(
+                    message: WebMessage(data: "capturePort", ports: [port2]),
+                    targetOrigin: Uri.parse("*"));
+                await controller.evaluateJavascript(
+                    source: "document.getElementById('button').click();");
               },
             ),
           ),
@@ -5008,7 +5027,8 @@ setTimeout(function() {
       });
 
       testWidgets('WebMessageListener', (WidgetTester tester) async {
-        final Completer controllerCompleter = Completer<InAppWebViewController>();
+        final Completer controllerCompleter =
+            Completer<InAppWebViewController>();
         final Completer<void> pageLoaded = Completer<void>();
         final Completer webMessageCompleter = Completer<String>();
         await tester.pumpWidget(
@@ -5020,11 +5040,13 @@ setTimeout(function() {
                 await controller.addWebMessageListener(WebMessageListener(
                   jsObjectName: "myTestObj",
                   allowedOriginRules: Set.from(["https://*.example.com"]),
-                  onPostMessage: (message, sourceOrigin, isMainFrame, replyProxy) {
-                    assert(sourceOrigin.toString() == "https://www.example.com");
+                  onPostMessage:
+                      (message, sourceOrigin, isMainFrame, replyProxy) {
+                    assert(
+                        sourceOrigin.toString() == "https://www.example.com");
                     assert(isMainFrame);
 
-                    replyProxy.postMessage(message! + " and back");
+                    replyProxy.postMessage(message + " and back");
                   },
                 ));
                 controllerCompleter.complete(controller);
@@ -5041,7 +5063,8 @@ setTimeout(function() {
           ),
         );
         final controller = await controllerCompleter.future;
-        await controller.loadUrl(urlRequest: URLRequest(url: Uri.parse("https://www.example.com/")));
+        await controller.loadUrl(
+            urlRequest: URLRequest(url: Uri.parse("https://www.example.com/")));
         await pageLoaded.future;
 
         await controller.evaluateJavascript(source: """
@@ -5221,7 +5244,7 @@ setTimeout(function() {
                 controllerCompleter.complete(controller);
               },
               onLoadStop: (controller, url) {
-                pageLoads.add(url!.toString());
+                pageLoads.add(url.toString());
               },
             ),
           ),
@@ -5236,12 +5259,12 @@ setTimeout(function() {
         await pageLoads.stream.first;
 
         var webHistory = await controller.getCopyBackForwardList();
-        expect(webHistory!.list!.length, 2);
+        expect(webHistory.list.length, 2);
 
         await controller.android.clearHistory();
 
         webHistory = await controller.getCopyBackForwardList();
-        expect(webHistory!.list!.length, 1);
+        expect(webHistory.list.length, 1);
 
         pageLoads.close();
       }, skip: !Platform.isAndroid);
@@ -5372,8 +5395,7 @@ setTimeout(function() {
             textDirection: TextDirection.ltr,
             child: InAppWebView(
               key: GlobalKey(),
-              initialData: InAppWebViewInitialData(
-                  data: """
+              initialData: InAppWebViewInitialData(data: """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5388,8 +5410,7 @@ setTimeout(function() {
     </script>
 </body>
 </html>
-                  """
-              ),
+                  """),
               initialOptions: InAppWebViewGroupOptions(
                 ios: IOSInAppWebViewOptions(
                   applePayAPIEnabled: true,
@@ -5436,7 +5457,7 @@ setTimeout(function() {
               clearCache: true,
             )),
             onLoadStop: (controller, url) {
-              pageLoaded.complete(url!.toString());
+              pageLoaded.complete(url.toString());
             },
           ),
         ),
@@ -5449,8 +5470,7 @@ setTimeout(function() {
       List<Cookie> cookies = await cookieManager.getCookies(url: url);
       expect(cookies, isNotEmpty);
 
-      Cookie? cookie =
-          await cookieManager.getCookie(url: url, name: "myCookie");
+      Cookie cookie = await cookieManager.getCookie(url: url, name: "myCookie");
       expect(cookie?.value.toString(), "myValue");
 
       await cookieManager.deleteCookie(url: url, name: "myCookie");
@@ -5469,7 +5489,8 @@ setTimeout(function() {
       final Completer<void> pageLoaded = Completer<void>();
 
       var headlessWebView = new HeadlessInAppWebView(
-        initialUrlRequest: URLRequest(url: Uri.parse("https://github.com/flutter")),
+        initialUrlRequest:
+            URLRequest(url: Uri.parse("https://github.com/flutter")),
         onWebViewCreated: (controller) {
           controllerCompleter.complete(controller);
         },
@@ -5485,7 +5506,7 @@ setTimeout(function() {
           await controllerCompleter.future;
       await pageLoaded.future;
 
-      final String? url = (await controller.getUrl())?.toString();
+      final String url = (await controller.getUrl())?.toString();
       expect(url, 'https://github.com/flutter');
 
       await headlessWebView.dispose();
@@ -5498,29 +5519,29 @@ setTimeout(function() {
       final Completer<void> pageLoaded = Completer<void>();
 
       var headlessWebView = new HeadlessInAppWebView(
-        initialUrlRequest: URLRequest(url: Uri.parse("https://github.com/flutter")),
-        onWebViewCreated: (controller) {
-          controllerCompleter.complete(controller);
-        },
-        onLoadStop: (controller, url) async {
-          pageLoaded.complete();
-        }
-      );
+          initialUrlRequest:
+              URLRequest(url: Uri.parse("https://github.com/flutter")),
+          onWebViewCreated: (controller) {
+            controllerCompleter.complete(controller);
+          },
+          onLoadStop: (controller, url) async {
+            pageLoaded.complete();
+          });
 
       await headlessWebView.run();
       expect(headlessWebView.isRunning(), true);
 
       final InAppWebViewController controller =
-      await controllerCompleter.future;
+          await controllerCompleter.future;
       await pageLoaded.future;
 
-      final String? url = (await controller.getUrl())?.toString();
+      final String url = (await controller.getUrl())?.toString();
       expect(url, 'https://github.com/flutter');
 
-      final Size? size = await headlessWebView.getSize();
+      final Size size = await headlessWebView.getSize();
       expect(size, isNotNull);
 
-      final Uint8List? screenshot = await controller.takeScreenshot();
+      final Uint8List screenshot = await controller.takeScreenshot();
       expect(screenshot, isNotNull);
 
       await headlessWebView.dispose();
@@ -5532,22 +5553,23 @@ setTimeout(function() {
       final Completer controllerCompleter = Completer<InAppWebViewController>();
 
       var headlessWebView = new HeadlessInAppWebView(
-          initialUrlRequest: URLRequest(url: Uri.parse("https://github.com/flutter")),
-          initialSize: Size(600, 800),
-          onWebViewCreated: (controller) {
-            controllerCompleter.complete(controller);
-          },
+        initialUrlRequest:
+            URLRequest(url: Uri.parse("https://github.com/flutter")),
+        initialSize: Size(600, 800),
+        onWebViewCreated: (controller) {
+          controllerCompleter.complete(controller);
+        },
       );
 
       await headlessWebView.run();
       expect(headlessWebView.isRunning(), true);
 
-      final Size? size = await headlessWebView.getSize();
+      final Size size = await headlessWebView.getSize();
       expect(size, isNotNull);
       expect(size, Size(600, 800));
 
       await headlessWebView.setSize(Size(1080, 1920));
-      final Size? newSize = await headlessWebView.getSize();
+      final Size newSize = await headlessWebView.getSize();
       expect(newSize, isNotNull);
       expect(newSize, Size(1080, 1920));
 
@@ -5561,7 +5583,8 @@ setTimeout(function() {
       final Completer<void> pageLoaded = Completer<void>();
 
       var headlessWebView = new HeadlessInAppWebView(
-        initialUrlRequest: URLRequest(url: Uri.parse("https://github.com/flutter")),
+        initialUrlRequest:
+            URLRequest(url: Uri.parse("https://github.com/flutter")),
         initialOptions: InAppWebViewGroupOptions(
             crossPlatform: InAppWebViewOptions(javaScriptEnabled: false)),
         onWebViewCreated: (controller) {
@@ -5577,9 +5600,9 @@ setTimeout(function() {
           await controllerCompleter.future;
       await pageLoaded.future;
 
-      InAppWebViewGroupOptions? options = await controller.getOptions();
+      InAppWebViewGroupOptions options = await controller.getOptions();
       expect(options, isNotNull);
-      expect(options!.crossPlatform.javaScriptEnabled, false);
+      expect(options.crossPlatform.javaScriptEnabled, false);
 
       await controller.setOptions(
           options: InAppWebViewGroupOptions(
@@ -5587,7 +5610,7 @@ setTimeout(function() {
 
       options = await controller.getOptions();
       expect(options, isNotNull);
-      expect(options!.crossPlatform.javaScriptEnabled, true);
+      expect(options.crossPlatform.javaScriptEnabled, true);
     });
   });
 
@@ -5605,14 +5628,13 @@ setTimeout(function() {
       expect(inAppBrowser.isOpened(), true);
       expect(() async {
         await inAppBrowser.openUrlRequest(
-            urlRequest:
-                URLRequest(url: Uri.parse("https://flutter.dev")));
+            urlRequest: URLRequest(url: Uri.parse("https://flutter.dev")));
       }, throwsA(isInstanceOf<InAppBrowserAlreadyOpenedException>()));
 
       await inAppBrowser.firstPageLoaded.future;
       var controller = inAppBrowser.webViewController;
 
-      final String? url = (await controller.getUrl())?.toString();
+      final String url = (await controller.getUrl())?.toString();
       expect(url, 'https://github.com/flutter');
 
       await inAppBrowser.close();
@@ -5628,19 +5650,20 @@ setTimeout(function() {
         await inAppBrowser.show();
       }, throwsA(isInstanceOf<InAppBrowserNotOpenedException>()));
 
-      await inAppBrowser.openFile(assetFilePath: "test_assets/in_app_webview_initial_file_test.html");
+      await inAppBrowser.openFile(
+          assetFilePath: "test_assets/in_app_webview_initial_file_test.html");
       await inAppBrowser.browserCreated.future;
       expect(inAppBrowser.isOpened(), true);
       expect(() async {
         await inAppBrowser.openUrlRequest(
             urlRequest:
-            URLRequest(url: Uri.parse("https://github.com/flutter")));
+                URLRequest(url: Uri.parse("https://github.com/flutter")));
       }, throwsA(isInstanceOf<InAppBrowserAlreadyOpenedException>()));
 
       await inAppBrowser.firstPageLoaded.future;
       var controller = inAppBrowser.webViewController;
 
-      final String? url = (await controller.getUrl())?.toString();
+      final String url = (await controller.getUrl())?.toString();
       expect(url, endsWith("in_app_webview_initial_file_test.html"));
 
       await inAppBrowser.close();
@@ -5656,7 +5679,8 @@ setTimeout(function() {
         await inAppBrowser.show();
       }, throwsA(isInstanceOf<InAppBrowserNotOpenedException>()));
 
-      await inAppBrowser.openData(data: """
+      await inAppBrowser.openData(
+          data: """
 <!doctype html>
 <html lang="en">
     <head>
@@ -5680,13 +5704,13 @@ setTimeout(function() {
       expect(() async {
         await inAppBrowser.openUrlRequest(
             urlRequest:
-            URLRequest(url: Uri.parse("https://github.com/flutter")));
+                URLRequest(url: Uri.parse("https://github.com/flutter")));
       }, throwsA(isInstanceOf<InAppBrowserAlreadyOpenedException>()));
 
       await inAppBrowser.firstPageLoaded.future;
       var controller = inAppBrowser.webViewController;
 
-      final String? url = (await controller.getUrl())?.toString();
+      final String url = (await controller.getUrl())?.toString();
       expect(url, 'https://flutter.dev/');
 
       await inAppBrowser.close();
@@ -5704,9 +5728,9 @@ setTimeout(function() {
       await inAppBrowser.browserCreated.future;
       await inAppBrowser.firstPageLoaded.future;
 
-      InAppBrowserClassOptions? options = await inAppBrowser.getOptions();
+      InAppBrowserClassOptions options = await inAppBrowser.getOptions();
       expect(options, isNotNull);
-      expect(options!.crossPlatform.hideToolbarTop, true);
+      expect(options.crossPlatform.hideToolbarTop, true);
 
       await inAppBrowser.setOptions(
           options: InAppBrowserClassOptions(
@@ -5714,7 +5738,7 @@ setTimeout(function() {
 
       options = await inAppBrowser.getOptions();
       expect(options, isNotNull);
-      expect(options!.crossPlatform.hideToolbarTop, false);
+      expect(options.crossPlatform.hideToolbarTop, false);
     });
   });
 
@@ -5723,12 +5747,12 @@ setTimeout(function() {
       var chromeSafariBrowser = new MyChromeSafariBrowser();
       expect(chromeSafariBrowser.isOpened(), false);
 
-      await chromeSafariBrowser.open(url: Uri.parse("https://github.com/flutter"));
+      await chromeSafariBrowser.open(
+          url: Uri.parse("https://github.com/flutter"));
       await chromeSafariBrowser.browserCreated.future;
       expect(chromeSafariBrowser.isOpened(), true);
       expect(() async {
-        await chromeSafariBrowser.open(
-            url: Uri.parse("https://flutter.dev"));
+        await chromeSafariBrowser.open(url: Uri.parse("https://flutter.dev"));
       }, throwsA(isInstanceOf<ChromeSafariBrowserAlreadyOpenedException>()));
 
       await expectLater(chromeSafariBrowser.firstPageLoaded.future, completes);
@@ -5754,8 +5778,8 @@ setTimeout(function() {
           textDirection: TextDirection.ltr,
           child: InAppWebView(
             key: GlobalKey(),
-            initialUrlRequest:
-            URLRequest(url: Uri.parse('http://localhost:8080/test_assets/index.html')),
+            initialUrlRequest: URLRequest(
+                url: Uri.parse('http://localhost:8080/test_assets/index.html')),
             onWebViewCreated: (controller) {
               controllerCompleter.complete(controller);
             },
@@ -5763,8 +5787,8 @@ setTimeout(function() {
         ),
       );
       final InAppWebViewController controller =
-      await controllerCompleter.future;
-      final String? currentUrl = (await controller.getUrl())?.toString();
+          await controllerCompleter.future;
+      final String currentUrl = (await controller.getUrl())?.toString();
       expect(currentUrl, 'http://localhost:8080/test_assets/index.html');
     });
 

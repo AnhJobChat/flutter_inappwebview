@@ -99,6 +99,7 @@ public class InAppWebViewOptions implements Options<InAppWebView> {
   public Boolean useOnRenderProcessGone = false;
   public Boolean disableDefaultErrorPage = false;
   public Boolean useHybridComposition = false;
+  public String backgroundColor;
   @Nullable
   public String verticalScrollbarThumbColor;
   @Nullable
@@ -307,6 +308,9 @@ public class InAppWebViewOptions implements Options<InAppWebView> {
         case "hardwareAcceleration":
           hardwareAcceleration = (Boolean) value;
           break;
+        case "backgroundColor":
+          backgroundColor = (String) value;
+          break;
         case "supportMultipleWindows":
           supportMultipleWindows = (Boolean) value;
           break;
@@ -433,6 +437,7 @@ public class InAppWebViewOptions implements Options<InAppWebView> {
     options.put("saveFormData", saveFormData);
     options.put("thirdPartyCookiesEnabled", thirdPartyCookiesEnabled);
     options.put("hardwareAcceleration", hardwareAcceleration);
+    options.put("backgroundColor", backgroundColor);
     options.put("supportMultipleWindows", supportMultipleWindows);
     options.put("regexToCancelSubFramesLoading", regexToCancelSubFramesLoading);
     options.put("overScrollMode", overScrollMode);

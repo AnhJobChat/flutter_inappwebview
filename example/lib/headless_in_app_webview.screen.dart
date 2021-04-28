@@ -12,7 +12,7 @@ class HeadlessInAppWebViewExampleScreen extends StatefulWidget {
 
 class _HeadlessInAppWebViewExampleScreenState
     extends State<HeadlessInAppWebViewExampleScreen> {
-  HeadlessInAppWebView? headlessWebView;
+  HeadlessInAppWebView headlessWebView;
   String url = "";
 
   @override
@@ -84,8 +84,9 @@ class _HeadlessInAppWebViewExampleScreenState
             child: ElevatedButton(
                 onPressed: () async {
                   try {
-                    await headlessWebView?.webViewController.evaluateJavascript(
-                        source: """console.log('Here is the message!');""");
+                    await headlessWebView?.webViewController
+                        ?.evaluateJavascript(
+                            source: """console.log('Here is the message!');""");
                   } on MissingPluginException {
                     print(
                         "HeadlessInAppWebView is not running. Click on \"Run HeadlessInAppWebView\"!");

@@ -2,15 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
-import '../util.dart';
-
-import '../in_app_webview/in_app_webview_options.dart';
-
-import 'android/in_app_browser_options.dart';
 import '../in_app_webview/android/in_app_webview_options.dart';
-
-import 'ios/in_app_browser_options.dart';
+import '../in_app_webview/in_app_webview_options.dart';
 import '../in_app_webview/ios/in_app_webview_options.dart';
+import '../util.dart';
+import 'android/in_app_browser_options.dart';
+import 'ios/in_app_browser_options.dart';
 
 class BrowserOptions {
   Map<String, dynamic> toMap() {
@@ -38,22 +35,22 @@ class BrowserOptions {
 ///Class that represents the options that can be used for an [InAppBrowser] WebView.
 class InAppBrowserClassOptions {
   ///Cross-platform options.
-  late InAppBrowserOptions crossPlatform;
+  InAppBrowserOptions crossPlatform;
 
   ///Android-specific options.
-  late AndroidInAppBrowserOptions android;
+  AndroidInAppBrowserOptions android;
 
   ///iOS-specific options.
-  late IOSInAppBrowserOptions ios;
+  IOSInAppBrowserOptions ios;
 
   ///WebView options.
-  late InAppWebViewGroupOptions inAppWebViewGroupOptions;
+  InAppWebViewGroupOptions inAppWebViewGroupOptions;
 
   InAppBrowserClassOptions(
-      {InAppBrowserOptions? crossPlatform,
-      AndroidInAppBrowserOptions? android,
-      IOSInAppBrowserOptions? ios,
-      InAppWebViewGroupOptions? inAppWebViewGroupOptions}) {
+      {InAppBrowserOptions crossPlatform,
+      AndroidInAppBrowserOptions android,
+      IOSInAppBrowserOptions ios,
+      InAppWebViewGroupOptions inAppWebViewGroupOptions}) {
     this.crossPlatform = crossPlatform ?? InAppBrowserOptions();
     this.android = android ?? AndroidInAppBrowserOptions();
     this.ios = ios ?? IOSInAppBrowserOptions();
@@ -126,7 +123,7 @@ class InAppBrowserOptions
   bool hideToolbarTop;
 
   ///Set the custom background color of the toolbar at the top.
-  Color? toolbarTopBackgroundColor;
+  Color toolbarTopBackgroundColor;
 
   ///Set to `true` to hide the url bar on the toolbar at the top. The default value is `false`.
   bool hideUrlBar;

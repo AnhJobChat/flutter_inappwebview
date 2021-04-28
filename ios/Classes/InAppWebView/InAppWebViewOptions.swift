@@ -30,6 +30,7 @@ public class InAppWebViewOptions: Options<InAppWebView> {
     var incognito = false
     var cacheEnabled = true
     var transparentBackground = false
+    var backgroundColor: String? = nil
     var disableVerticalScroll = false
     var disableHorizontalScroll = false
     var disableContextMenu = false
