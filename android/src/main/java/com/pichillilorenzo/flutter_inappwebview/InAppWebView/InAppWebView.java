@@ -39,6 +39,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
+import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
@@ -684,6 +685,8 @@ final public class InAppWebView extends InputAwareWebView {
     settings.setBuiltInZoomControls(options.builtInZoomControls);
     settings.setDisplayZoomControls(options.displayZoomControls);
     settings.setSupportMultipleWindows(options.supportMultipleWindows);
+    setBackgroundColor(Color.TRANSPARENT);
+    setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
       settings.setSafeBrowsingEnabled(options.safeBrowsingEnabled);
